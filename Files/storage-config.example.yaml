@@ -1,0 +1,8 @@
+kind: Secret
+apiVersion: v1
+metadata:
+  name: storage-config
+data:
+  # refers to s3-secret.example.yaml
+  <secret-name>: <secret-data-as-dict-base64encoded>
+type: Opaque

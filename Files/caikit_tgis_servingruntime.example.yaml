@@ -1,0 +1,47 @@
+apiVersion: serving.kserve.io/v1alpha1
+kind: ServingRuntime
+metadata:
+  name: flan-example-sr
+spec:
+  annotations:
+    prometheus.io/path: /metrics
+    prometheus.io/port: '3000'
+  containers:
+    - args:
+        - '--model-name=/mnt/models/artifacts/'
+      command:
+        - text-generation-launcher
+      env:
+        - name: HF_HOME
+          value: /tmp/hf_home
+      image: '<img-for-text-generation-inference>'
+      name: kserve-container
+      volumeMounts:
+        - mountPath: /dev/shm
+          name: shm
+    - env:
+        - name: RUNTIME_LOCAL_MODELS_DIR
+          value: /mnt/models
+        - name: HF_HOME
+          value: /tmp/hf_home
+        - name: RUNTIME_GRPC_ENABLED
+          value: 'false'
+        - name: RUNTIME_HTTP_ENABLED
+          value: 'true'
+      image: '<img-for-caikit-tgis-serving>'
+      name: transformer-container
+      ports:
+        - containerPort: 8080
+          protocol: TCP
+      volumeMounts:
+        - mountPath: /dev/shm
+          name: shm
+  multiModel: false
+  supportedModelFormats:
+    - autoSelect: true
+      name: caikit
+  volumes:
+    - emptyDir:
+        medium: Memory
+        sizeLimit: 2Gi
+      name: shm
