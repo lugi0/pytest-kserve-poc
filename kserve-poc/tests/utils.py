@@ -2,14 +2,17 @@ from ocp_resources.pod import Pod
 from kubernetes.dynamic.client import DynamicClient
 from ocp_resources.inference_service import InferenceService
 from ocp_resources.namespace import Namespace
+from simple_logger.logger import get_logger
+
 from conftest import client
 import subprocess
-import logging
 
-LOGGER = logging.getLogger(__name__)
+LOGGER = get_logger(__name__)
+
 
 class FlanPodNotFoundError(Exception):
     pass
+
 
 class CurlFailedInPod(Exception):
 
@@ -18,6 +21,7 @@ class CurlFailedInPod(Exception):
         self.message = f'curl failed with RC {result.returncode} - stderr: {result.stderr}'
         super().__init__(self.message)
 
+
 class ProtocolNotSupported(Exception):
     
     def __init__(self, protocol: str):
@@ -25,12 +29,14 @@ class ProtocolNotSupported(Exception):
         self.message = f'Protocol {protocol} is not supported'
         super().__init__(self.message)
 
+
 def get_flan_pod(client: DynamicClient, namespace: str, is_name: str) -> Pod:
     for pod in Pod.get(dyn_client=client, namespace=namespace):
         if is_name+"-predictor" in pod.name:
             return pod
 
     raise FlanPodNotFoundError(f"No flan predictor pod found in namespace {namespace}")
+
 
 def curl_from_pod(namespace: Namespace, isvc: InferenceService, pod: Pod, endpoint: str, protocol: str = "http") -> str:
     if protocol == "http":

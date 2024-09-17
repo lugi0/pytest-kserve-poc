@@ -1,0 +1,1 @@
+TIMEOUT_6MIN = 6 * 10
