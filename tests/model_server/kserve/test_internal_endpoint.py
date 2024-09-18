@@ -6,15 +6,12 @@ from simple_logger.logger import get_logger
 from utils import get_flan_pod, curl_from_pod
 
 
-LOGGER = get_logger(__name__)
+LOGGER = get_logger(name=__name__)
 
 
 class TestKserveInternalEndpoint:
-    def test_deploy_model(self, admin_client, endpoint_namespace, endpoint_isvc):
-        assert (
-            endpoint_isvc.instance.status.modelStatus.states.activeModelState
-            == "Loaded"
-        )
+    def test_deploy_model(self, endpoint_namespace, endpoint_isvc):
+        assert endpoint_isvc.instance.status.modelStatus.states.activeModelState == "Loaded"
         assert (
             endpoint_isvc.instance.status.address.url
             == f"http://{endpoint_isvc.name}.{endpoint_namespace.name}.svc.cluster.local"
@@ -24,8 +21,8 @@ class TestKserveInternalEndpoint:
         predictor_pod = get_flan_pod(
             namespace=endpoint_namespace, client=endpoint_namespace.name, name=endpoint_isvc.name
         )
-        predictor_pod.wait_for_status("Running")
-        predictor_pod.wait_for_condition("Ready", "True")
+        predictor_pod.wait_for_status(status="Running")
+        predictor_pod.wait_for_condition(condition="Ready", status="True")
 
     def test_curl_with_istio(
         self,
@@ -36,9 +33,7 @@ class TestKserveInternalEndpoint:
         diff_pod_with_istio_sidecar,
         test_smm: NamespacedResource,
     ):
-        LOGGER.info(
-            "Testing curl from the same namespace with a pod part of the service mesh"
-        )
+        LOGGER.info("Testing curl from the same namespace with a pod part of the service mesh")
 
         curl_stdout = curl_from_pod(
             isvc=endpoint_isvc,
@@ -47,13 +42,9 @@ class TestKserveInternalEndpoint:
         )
         assert curl_stdout == "OK"
 
-        LOGGER.info(
-            "Testing curl from a different namespace with a pod part of the service mesh"
-        )
+        LOGGER.info("Testing curl from a different namespace with a pod part of the service mesh")
 
-        curl_stdout = curl_from_pod(
-            isvc=endpoint_isvc, pod=diff_pod_with_istio_sidecar, endpoint="health"
-        )
+        curl_stdout = curl_from_pod(isvc=endpoint_isvc, pod=diff_pod_with_istio_sidecar, endpoint="health")
         assert curl_stdout == "OK"
 
     def test_curl_outside_istio(
@@ -64,9 +55,7 @@ class TestKserveInternalEndpoint:
         endpoint_pod_without_istio_sidecar: Pod,
         diff_pod_without_istio_sidecar,
     ):
-        LOGGER.info(
-            "Testing curl from the same namespace with a pod not part of the service mesh"
-        )
+        LOGGER.info("Testing curl from the same namespace with a pod not part of the service mesh")
 
         curl_stdout = curl_from_pod(
             isvc=endpoint_isvc,
@@ -76,9 +65,7 @@ class TestKserveInternalEndpoint:
         )
         assert curl_stdout == "OK"
 
-        LOGGER.info(
-            "Testing curl from a different namespace with a pod not part of the service mesh"
-        )
+        LOGGER.info("Testing curl from a different namespace with a pod not part of the service mesh")
 
         curl_stdout = curl_from_pod(
             isvc=endpoint_isvc, pod=diff_pod_without_istio_sidecar, endpoint="health", protocol="https"

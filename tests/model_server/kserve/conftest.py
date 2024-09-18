@@ -6,12 +6,13 @@ from ocp_resources.secret import Secret
 from ocp_resources.serving_runtime import ServingRuntime
 from ocp_utilities.infra import dict_base64_encode
 from simple_logger.logger import get_logger
+from ocp_resources.service_mesh_memeber import ServiceMeshMember
 
 from tests.model_server.kserve.utils import create_sidecar_pod
 from utilities.infra import create_ns
 
 
-LOGGER = get_logger(__name__)
+LOGGER = get_logger(name=__name__)
 
 
 @pytest.fixture(scope="module")
@@ -74,9 +75,7 @@ def endpoint_isvc(admin_client, endpoint_sr, endpoint_s3_secret):
         },
     }
 
-    with InferenceService(
-        client=admin_client, namespace=endpoint_sr.name, **predictor
-    ) as isvc:
+    with InferenceService(client=admin_client, namespace=endpoint_sr.name, **predictor) as isvc:
         isvc.wait_for_condition(condition="Ready", status="True")
         yield isvc
 
@@ -120,7 +119,7 @@ def endpoint_pod_without_istio_sidecar(admin_client, endpoint_namespace):
     pod = create_sidecar_pod(
         admin_client=admin_client,
         namespace=endpoint_namespace,
-        istio=True,
+        istio=False,
         pod_name="test",
     )
     yield pod
@@ -144,7 +143,7 @@ def diff_pod_without_istio_sidecar(admin_client, diff_namespace):
     pod = create_sidecar_pod(
         admin_client=admin_client,
         namespace=diff_namespace,
-        istio=True,
+        istio=False,
         pod_name="test",
     )
     yield pod

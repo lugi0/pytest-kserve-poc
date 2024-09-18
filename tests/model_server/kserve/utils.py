@@ -8,7 +8,7 @@ from pyhelper_utils.shell import run_command
 from simple_logger.logger import get_logger
 
 
-LOGGER = get_logger(__name__)
+LOGGER = get_logger(name=__name__)
 
 
 class FlanPodNotFoundError(Exception):
@@ -56,11 +56,11 @@ def create_sidecar_pod(admin_client, namespace, istio, pod_name):
 
     cmd += " -- sleep infinity"
 
-    res, _, err = run_command(command=shlex.split(cmd), check=False)
+    _, _, err = run_command(command=shlex.split(cmd), check=False)
     if err:
         pytest.fail(f"Failed on {err}")
 
     pod = Pod(name=pod_name, Namespace=namespace.name, client=admin_client)
-    pod.wait_for_status("Running")
+    pod.wait_for_status(status="Running")
     pod.wait_for_condition(condition="Ready", status="True")
     return pod
