@@ -8,7 +8,7 @@ from ocp_utilities.infra import dict_base64_encode
 from simple_logger.logger import get_logger
 from ocp_resources.service_mesh_memeber import ServiceMeshMember
 
-from tests.model_server.kserve.utils import create_sidecar_pod
+from tests.model_server.kserve.utils import create_sidecar_pod, get_flan_pod
 from utilities.infra import create_ns
 
 
@@ -148,3 +148,14 @@ def diff_pod_without_istio_sidecar(admin_client, diff_namespace):
     )
     yield pod
     pod.clean_up()
+
+
+@pytest.fixture()
+def running_flan_pod(admin_client, endpoint_isvc):
+    predictor_pod = get_flan_pod(
+        namespace=endpoint_isvc.namespace,
+        client=admin_client,
+        name_prefix=endpoint_isvc.name,
+    )
+    predictor_pod.wait_for_status(status="Running")
+    predictor_pod.wait_for_condition(condition="Ready", status="True")

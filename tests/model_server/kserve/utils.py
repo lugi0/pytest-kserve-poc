@@ -22,9 +22,9 @@ class ProtocolNotSupported(Exception):
         super().__init__(self.message)
 
 
-def get_flan_pod(client: DynamicClient, namespace: str, name: str) -> Pod:
+def get_flan_pod(client: DynamicClient, namespace: str, name_prefix: str) -> Pod:
     for pod in Pod.get(dyn_client=client, namespace=namespace):
-        if name + "-predictor" in pod.name:
+        if name_prefix + "-predictor" in pod.name:
             return pod
 
     raise FlanPodNotFoundError(f"No flan predictor pod found in namespace {namespace}")

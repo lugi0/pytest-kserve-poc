@@ -3,26 +3,19 @@ from ocp_resources.pod import Pod
 from ocp_resources.namespace import Namespace
 from ocp_resources.inference_service import InferenceService
 from simple_logger.logger import get_logger
-from utils import get_flan_pod, curl_from_pod
+from utils import curl_from_pod
 
 
 LOGGER = get_logger(name=__name__)
 
 
 class TestKserveInternalEndpoint:
-    def test_deploy_model(self, endpoint_namespace, endpoint_isvc):
+    def test_deploy_model(self, endpoint_namespace, endpoint_isvc, running_flan_pod):
         assert endpoint_isvc.instance.status.modelStatus.states.activeModelState == "Loaded"
         assert (
             endpoint_isvc.instance.status.address.url
             == f"http://{endpoint_isvc.name}.{endpoint_namespace.name}.svc.cluster.local"
         )
-
-        #  should be in fixture - test setup
-        predictor_pod = get_flan_pod(
-            namespace=endpoint_namespace, client=endpoint_namespace.name, name=endpoint_isvc.name
-        )
-        predictor_pod.wait_for_status(status="Running")
-        predictor_pod.wait_for_condition(condition="Ready", status="True")
 
     def test_curl_with_istio(
         self,
