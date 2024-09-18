@@ -1,7 +1,3 @@
-from ocp_resources.resource import NamespacedResource
-from ocp_resources.pod import Pod
-from ocp_resources.namespace import Namespace
-from ocp_resources.inference_service import InferenceService
 from simple_logger.logger import get_logger
 from utils import curl_from_pod
 
@@ -19,12 +15,10 @@ class TestKserveInternalEndpoint:
 
     def test_curl_with_istio(
         self,
-        endpoint_isvc: InferenceService,
-        endpoint_namespace,
-        diff_namespace,
-        endpoint_pod_with_istio_sidecar: Pod,
+        endpoint_isvc,
+        endpoint_pod_with_istio_sidecar,
         diff_pod_with_istio_sidecar,
-        test_smm: NamespacedResource,
+        test_smm,
     ):
         LOGGER.info("Testing curl from the same namespace with a pod part of the service mesh")
 
@@ -42,10 +36,8 @@ class TestKserveInternalEndpoint:
 
     def test_curl_outside_istio(
         self,
-        endpoint_isvc: InferenceService,
-        endpoint_namespace: Namespace,
-        diff_namespace,
-        endpoint_pod_without_istio_sidecar: Pod,
+        endpoint_isvc,
+        endpoint_pod_without_istio_sidecar,
         diff_pod_without_istio_sidecar,
     ):
         LOGGER.info("Testing curl from the same namespace with a pod not part of the service mesh")
